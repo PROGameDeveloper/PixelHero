@@ -121,7 +121,7 @@ public class PlayerController : MonoBehaviour
 
     private void PlayDust()
     {
-        if (playerRB.velocity.x < 0 && isIdle || playerRB.velocity.x > 0 && isIdle)
+        if (playerRB.velocity.x != 0 && isIdle)
         {
             isIdle = false;
             if (isGrounded)
