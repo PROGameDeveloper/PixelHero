@@ -48,12 +48,15 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Color afterImageColor;
     [SerializeField] private float afterImageTimeBetween;
     private float afterImageCounter;
-    
+
+    // Player extras tracker
+    private PlayerExtrasTracker playerExtrasTracker;
 
     private void Awake()
     {
         playerRB = GetComponent<Rigidbody2D>();
         transformPlayerController = GetComponent<Transform>();
+        playerExtrasTracker = GetComponent<PlayerExtrasTracker>();
     }
 
     private void Start()
@@ -89,7 +92,7 @@ public class PlayerController : MonoBehaviour
             afterDashCounter -= Time.deltaTime;
         else
         {
-            if (Input.GetButtonDown("Fire2") && standingPlayer.activeSelf)
+            if ((Input.GetButtonDown("Fire2") && standingPlayer.activeSelf) && playerExtrasTracker.canDash)
             {
                 dashCounter = dashTime;
                 ShowAfterImage();
@@ -129,7 +132,7 @@ public class PlayerController : MonoBehaviour
             }
             animatorStandingPlayer.SetTrigger(IdShootArrow);
         }
-        if (Input.GetButtonDown("Fire1") && ballPlayer.activeSelf)
+        if ((Input.GetButtonDown("Fire1") && ballPlayer.activeSelf) && playerExtrasTracker.canDropBombs)
             Instantiate(prefabBomb, transformBombPoint.position, Quaternion.identity);
 
     }
@@ -151,7 +154,7 @@ public class PlayerController : MonoBehaviour
     private void Jump()
     {
         isGrounded = Physics2D.OverlapCircle(checkGroundPoint.position, 0.2f, selectedLayerMask);
-        if (Input.GetButtonDown("Jump") && (isGrounded || canDoubleJump))
+        if (Input.GetButtonDown("Jump") && (isGrounded || (canDoubleJump && playerExtrasTracker.canDoubleJump)))
         {
             if (isGrounded)
             {
@@ -209,7 +212,7 @@ public class PlayerController : MonoBehaviour
     private void BallMode()
     {
         float inputVertical = Input.GetAxisRaw("Vertical");
-        if (inputVertical <= -.9f && !ballPlayer.activeSelf || inputVertical >= .9 && ballPlayer.activeSelf)
+        if ((inputVertical <= -.9f && !ballPlayer.activeSelf || inputVertical >= .9 && ballPlayer.activeSelf) && playerExtrasTracker.canEnterBallMode)
         {
             ballModeCounter -= Time.deltaTime;
             if (ballModeCounter < 0)
