@@ -6,30 +6,49 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    private Rigidbody2D playerRB;
+    // Player Sprites
+    private GameObject standingPlayer;
+    private GameObject ballPlayer;
+
+    [Header("Player Movement")]
     [SerializeField] private float moveSpeed;
     [SerializeField] private float jumpForce;
-    private Transform checkGroundPoint;
+    private Rigidbody2D playerRB;
+    private Transform checkGroundPoint, transformPlayerController;
     [SerializeField] private LayerMask selectedLayerMask;
-    private bool isGrounded;
-    private bool isFlippedInX;
- 
-    private Animator animator;
-    private int IdSpeed;
-    private int IdIsGrounded;
-    private int IdShootArrow;
-    private int IdCanDoubleJump;
+    private bool isGrounded, isFlippedInX;
+    private Animator animatorStandingPlayer;
+    private Animator animatorBallPlayer;
+    private int IdSpeed, IdIsGrounded, IdShootArrow, IdCanDoubleJump;
+    private float ballModeCounter;
+    [SerializeField] private float waitForBallMode;
 
+    [Header("Player Shoot")]
+    [SerializeField] private ArrowController arrowController;
     private Transform transformArrowPoint;
-    [SerializeField]
-    private ArrowController arrowController;
-    private Transform transformPlayerController;
+    private Transform transformBombPoint;
+    [SerializeField] private GameObject prefabBomb;
 
-    [SerializeField]
-    private GameObject dustJump;
+    [Header("Player Dust")]
+    [SerializeField] private GameObject dustJump;
     private Transform transformDustPoint;
-    private bool isIdle;
-    private bool canDoubleJump;
+    private bool isIdle, canDoubleJump;
+
+    [Header("Player Dash")]
+    [SerializeField] private float dashSpeed;
+    [SerializeField] private float dashTime;
+    private float dashCounter;
+    [SerializeField] private float waitForDash;
+    private float afterDashCounter;
+
+    [Header("Player Dash After Image")]
+    [SerializeField] private SpriteRenderer playerSR;
+    [SerializeField] private SpriteRenderer afterImageSR;
+    [SerializeField] private float afterImageLifetime;
+    [SerializeField] private Color afterImageColor;
+    [SerializeField] private float afterImageTimeBetween;
+    private float afterImageCounter;
+    
 
     private void Awake()
     {
@@ -39,10 +58,15 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
+        standingPlayer = GameObject.Find("StandingPlayer");
+        ballPlayer = GameObject.Find("BallPlayer");
+        ballPlayer.SetActive(false);
         transformDustPoint = GameObject.Find("DustPoint").GetComponent<Transform>();
         transformArrowPoint = GameObject.Find("ArrowPoint").GetComponent<Transform>();
         checkGroundPoint = GameObject.Find("CheckGroundPoint").GetComponent<Transform>();
-        animator =GameObject.Find("StandingPlayer").GetComponent<Animator>();
+        transformBombPoint = GameObject.Find("BombPoint").GetComponent<Transform>();
+        animatorStandingPlayer = standingPlayer.GetComponent<Animator>();
+        animatorBallPlayer = ballPlayer.GetComponent<Animator>();
         IdSpeed = Animator.StringToHash("speed");
         IdIsGrounded = Animator.StringToHash("isGrounded");
         IdShootArrow = Animator.StringToHash("shootArrow");
@@ -51,16 +75,47 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        Move();
+        Dash();
         Jump();
-        isFlippedInX = CheckAndSetDirection();
-        ShootArrow();
+        CheckAndSetDirection();
+        Shoot();
         PlayDust();
+        BallMode();
     }
 
-    private void ShootArrow()
+    private void Dash()
     {
-        if (Input.GetButtonDown("Fire1"))
+        if (afterDashCounter > 0)
+            afterDashCounter -= Time.deltaTime;
+        else
+        {
+            if (Input.GetButtonDown("Fire2") && standingPlayer.activeSelf)
+            {
+                dashCounter = dashTime;
+                ShowAfterImage();
+            }
+        }
+
+        if (dashCounter > 0)
+        {
+            dashCounter -= Time.deltaTime;
+            playerRB.velocity = new Vector2(dashSpeed * transformPlayerController.localScale.x , playerRB.velocity.y);
+            afterImageCounter -= Time.deltaTime;
+            if (afterImageCounter <= 0)
+            {
+                ShowAfterImage();
+            }
+            afterDashCounter = waitForDash;
+        }
+        else
+        {
+            Move();
+        }
+    }
+
+    private void Shoot()
+    {
+        if (Input.GetButtonDown("Fire1") && standingPlayer.activeSelf)
         {
             ArrowController tempArrowController = Instantiate(arrowController, transformArrowPoint.position, transformArrowPoint.rotation);
             if (isFlippedInX)
@@ -72,15 +127,25 @@ public class PlayerController : MonoBehaviour
             {
                 tempArrowController.ArrowDirection = new Vector2(1, 0f);
             }
-            animator.SetTrigger(IdShootArrow);
+            animatorStandingPlayer.SetTrigger(IdShootArrow);
         }
+        if (Input.GetButtonDown("Fire1") && ballPlayer.activeSelf)
+            Instantiate(prefabBomb, transformBombPoint.position, Quaternion.identity);
+
     }
 
     private void Move()
     {
         float inputX = Input.GetAxisRaw("Horizontal") * moveSpeed;
         playerRB.velocity = new Vector2(inputX, playerRB.velocity.y);
-        animator.SetFloat(IdSpeed, Mathf.Abs(playerRB.velocity.x));
+        if (standingPlayer.activeSelf)
+        {
+            animatorStandingPlayer.SetFloat(IdSpeed, Mathf.Abs(playerRB.velocity.x));
+        }
+        if (ballPlayer.activeSelf)
+        {
+            animatorBallPlayer.SetFloat(IdSpeed, Mathf.Abs(playerRB.velocity.x));
+        }
     }
 
     private void Jump()
@@ -96,15 +161,14 @@ public class PlayerController : MonoBehaviour
             else
             {
                 canDoubleJump = false;
-                animator.SetTrigger(IdCanDoubleJump);
+                animatorStandingPlayer.SetTrigger(IdCanDoubleJump);
             }
-            
             playerRB.velocity = new Vector2(playerRB.velocity.x, jumpForce);
         }
-        animator.SetBool(IdIsGrounded, isGrounded);
+        animatorStandingPlayer.SetBool(IdIsGrounded, isGrounded);
     }
 
-    private bool CheckAndSetDirection()
+    private void CheckAndSetDirection()
     {
         if (playerRB.velocity.x < 0)
         {
@@ -116,7 +180,6 @@ public class PlayerController : MonoBehaviour
             transform.localScale = Vector3.one;
             isFlippedInX = false;
         }
-        return isFlippedInX;
     }
 
     private void PlayDust()
@@ -131,5 +194,30 @@ public class PlayerController : MonoBehaviour
         {
             isIdle = true;
         }
+    }
+
+    private void ShowAfterImage()
+    {
+        SpriteRenderer afterImage = Instantiate(afterImageSR,transformPlayerController.position,transformPlayerController.rotation);
+        afterImage.sprite = playerSR.sprite;
+        afterImage.transform.localScale = transformPlayerController.localScale;
+        afterImage.color = afterImageColor;
+        Destroy(afterImage.gameObject,afterImageLifetime);
+        afterImageCounter = afterImageTimeBetween;
+    }
+
+    private void BallMode()
+    {
+        float inputVertical = Input.GetAxisRaw("Vertical");
+        if (inputVertical <= -.9f && !ballPlayer.activeSelf || inputVertical >= .9 && ballPlayer.activeSelf)
+        {
+            ballModeCounter -= Time.deltaTime;
+            if (ballModeCounter < 0)
+            {
+                ballPlayer.SetActive(!ballPlayer.activeSelf);
+                standingPlayer.SetActive(!standingPlayer.activeSelf);
+            }
+        }
+        else ballModeCounter = waitForBallMode;
     }
 }
