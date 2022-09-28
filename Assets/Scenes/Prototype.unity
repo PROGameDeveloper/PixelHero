@@ -349,7 +349,7 @@ GameObject:
   - component: {fileID: 294863437}
   m_Layer: 8
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -437,10 +437,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c1acf316a8d6ac459a7dd8a9890b123, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canDoubleJump: 1
-  canDash: 1
-  canEnterBallMode: 1
-  canDropBombs: 1
+  _canDoubleJump: 0
+  _canDash: 0
+  _canEnterBallMode: 0
+  _canDropBombs: 0
 --- !u!1 &357126785
 GameObject:
   m_ObjectHideFlags: 0
@@ -455,7 +455,7 @@ GameObject:
   - component: {fileID: 357126789}
   m_Layer: 8
   m_Name: StandingPlayer
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3164,7 +3164,7 @@ GameObject:
   - component: {fileID: 756738642}
   m_Layer: 8
   m_Name: BallPlayer
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
