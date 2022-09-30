@@ -9,7 +9,7 @@ public class BombController : MonoBehaviour
     [SerializeField]private float waitForDestroy;
     private Animator animator;
     private bool isActive;
-    private int IDIsActive;
+    private int IdIsActive;
     private Transform transformBomb;
     [SerializeField] private float expansiveWaveRange;
     [SerializeField] private LayerMask isDestroyable;
@@ -17,7 +17,7 @@ public class BombController : MonoBehaviour
     private void Awake()
     {
         animator = GetComponent<Animator>();
-        IDIsActive = Animator.StringToHash("isActive");
+        IdIsActive = Animator.StringToHash("isActive");
         transformBomb = GetComponent<Transform>();
     }
 
@@ -32,7 +32,7 @@ public class BombController : MonoBehaviour
     private void ActivatedBomb()
     {
         isActive = true;
-        animator.SetBool(IDIsActive, isActive);
+        animator.SetBool(IdIsActive, isActive);
         Collider2D[] destroyedObjects = Physics2D.OverlapCircleAll(transformBomb.position,expansiveWaveRange,isDestroyable);
         if (destroyedObjects.Length > 0)
         {
