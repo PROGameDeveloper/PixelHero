@@ -120,6 +120,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   waitForExplode: 1
   waitForDestroy: 1.4
+  transformBomb: {fileID: 6940327621569924326, guid: 584316777d7874744a40b3324301df70, type: 3}
   expansiveWaveRange: 1
   isDestroyable:
     serializedVersion: 2

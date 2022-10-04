@@ -13,7 +13,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float moveSpeed;
     [SerializeField] private float jumpForce;
     private Rigidbody2D playerRB;
-    private Transform checkGroundPoint, transformPlayerController;
+    [SerializeField]private Transform checkGroundPoint;
+    private Transform transformPlayerController;
     [SerializeField] private LayerMask selectedLayerMask;
     private bool isGrounded, isFlippedInX;
     private Animator animatorStandingPlayer;
@@ -21,6 +22,7 @@ public class PlayerController : MonoBehaviour
     private int IdSpeed, IdIsGrounded, IdShootArrow, IdCanDoubleJump;
     private float ballModeCounter;
     [SerializeField] private float waitForBallMode;
+    [SerializeField] private float isGroundedRange;
 
     [Header("Player Shoot")]
     [SerializeField] private ArrowController arrowController;
@@ -65,7 +67,7 @@ public class PlayerController : MonoBehaviour
         ballPlayer.SetActive(false);
         transformDustPoint = GameObject.Find("DustPoint").GetComponent<Transform>();
         transformArrowPoint = GameObject.Find("ArrowPoint").GetComponent<Transform>();
-        checkGroundPoint = GameObject.Find("CheckGroundPoint").GetComponent<Transform>();
+        //checkGroundPoint = GameObject.Find("CheckGroundPoint").GetComponent<Transform>();
         transformBombPoint = GameObject.Find("BombPoint").GetComponent<Transform>();
         animatorStandingPlayer = standingPlayer.GetComponent<Animator>();
         animatorBallPlayer = ballPlayer.GetComponent<Animator>();
@@ -152,7 +154,8 @@ public class PlayerController : MonoBehaviour
 
     private void Jump()
     {
-        isGrounded = Physics2D.OverlapCircle(checkGroundPoint.position, 0.2f, selectedLayerMask);
+        //isGrounded = Physics2D.OverlapCircle(checkGroundPoint.position, isGroundedRange, selectedLayerMask);
+        isGrounded = Physics2D.Raycast(checkGroundPoint.position, Vector2.down, isGroundedRange, selectedLayerMask);
         if (Input.GetButtonDown("Jump") && (isGrounded || (canDoubleJump && playerExtrasTracker.CanDoubleJump)))
         {
             if (isGrounded)
@@ -221,5 +224,10 @@ public class PlayerController : MonoBehaviour
             }
         }
         else ballModeCounter = waitForBallMode;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawWireSphere(checkGroundPoint.position, isGroundedRange);
     }
 }
